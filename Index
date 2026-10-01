@@ -1,0 +1,423 @@
+```html
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kuis Game Agama Islam</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+    }
+    .gradient-bg {
+      background: linear-gradient(135deg, #064e3b 0%, #047857 50%, #0f766e 100%);
+    }
+    .custom-shadow {
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    }
+  </style>
+</head>
+<body class="gradient-bg min-h-screen flex items-center justify-center p-4 sm:p-6 text-slate-800">
+
+  <!-- Main Container -->
+  <div class="w-full max-w-2xl bg-white rounded-2xl custom-shadow overflow-hidden transition-all duration-300">
+    
+    <!-- Top Decorative Banner -->
+    <div class="bg-emerald-800 text-amber-300 p-4 sm:p-6 text-center relative overflow-hidden border-b-4 border-amber-400">
+      <div class="absolute -right-6 -bottom-6 text-emerald-700/30 text-8xl pointer-events-none">
+        <i class="fa-solid font-regular fa-kaaba"></i>
+      </div>
+      <h1 class="text-2xl sm:text-3xl font-bold tracking-wide flex items-center justify-center gap-2">
+        <i class="fa-solid fa-mosque text-amber-400"></i> KUIS AGAMA ISLAM
+      </h1>
+      <p class="text-emerald-100 text-xs sm:text-sm mt-1">Uji Pengetahuan Dasar & Wawasan Keislaman Anda</p>
+    </div>
+
+    <!-- Screen 1: Start Screen -->
+    <div id="start-screen" class="p-6 sm:p-8 text-center">
+      <div class="w-20 h-20 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-inner">
+        <i class="fa-solid fa-book-quran"></i>
+      </div>
+      <h2 class="text-xl font-bold text-emerald-900 mb-2">Selamat Datang di Game Kuis!</h2>
+      <p class="text-slate-600 text-sm mb-6">Terdapat 15 pertanyaan seputar Al-Qur'an, Rukun Islam, Rukun Iman, Kisah Nabi, dan Fiqih.</p>
+
+      <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-6 text-left text-xs sm:text-sm text-emerald-800 space-y-2">
+        <div class="flex items-center gap-2 font-semibold">
+          <i class="fa-solid fa-star text-amber-500"></i> Fitur Game:
+        </div>
+        <ul class="list-disc list-inside space-y-1 text-slate-700">
+          <li>15 Soal Pilihan Ganda</li>
+          <li>Waktu 20 detik per soal</li>
+          <li>Ulasan pembahasan lengkap di akhir kuis</li>
+          <li>Skor Tertinggi tersimpan secara otomatis</li>
+        </ul>
+      </div>
+
+      <div id="high-score-display" class="mb-6 text-sm font-semibold text-slate-700 bg-slate-100 py-2 px-4 rounded-lg inline-block">
+        <i class="fa-solid fa-trophy text-amber-500 mr-1"></i> Skor Tertinggi Saya: <span id="high-score-val" class="text-emerald-700 font-bold">0</span>
+      </div>
+
+      <div>
+        <button id="start-btn" onclick="startQuiz()" class="w-full sm:w-auto px-8 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg transition duration-200 flex items-center justify-center gap-2 mx-auto text-base cursor-pointer">
+          <i class="fa-solid fa-play"></i> Mulai Kuis Sekarang
+        </button>
+      </div>
+    </div>
+
+    <!-- Screen 2: Quiz Screen -->
+    <div id="quiz-screen" class="p-6 sm:p-8 hidden">
+      <!-- Status Bar -->
+      <div class="flex flex-wrap justify-between items-center mb-4 text-xs sm:text-sm font-semibold text-slate-600 gap-2">
+        <span class="bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full">
+          Soal <span id="current-question-num">1</span>/15
+        </span>
+        <span class="bg-amber-100 text-amber-800 px-3 py-1 rounded-full flex items-center gap-1">
+          <i class="fa-solid fa-clock"></i> <span id="timer">20</span>s
+        </span>
+        <span class="bg-slate-100 text-slate-700 px-3 py-1 rounded-full">
+          Skor: <span id="live-score" class="text-emerald-600 font-bold">0</span>
+        </span>
+      </div>
+
+      <!-- Progress Bar -->
+      <div class="w-full bg-slate-200 h-2.5 rounded-full mb-6 overflow-hidden">
+        <div id="progress-bar" class="bg-emerald-500 h-2.5 rounded-full transition-all duration-300 w-0"></div>
+      </div>
+
+      <!-- Question Text -->
+      <h2 id="question-text" class="text-base sm:text-lg font-bold text-slate-800 mb-6 leading-relaxed min-h-[60px]">
+        Pertanyaan akan muncul di sini...
+      </h2>
+
+      <!-- Options Container -->
+      <div id="options-container" class="space-y-3 mb-6">
+        <!-- Option buttons dynamically generated -->
+      </div>
+
+      <!-- Next Button & Hint -->
+      <div class="flex justify-between items-center pt-2">
+        <p id="feedback-msg" class="text-xs sm:text-sm font-medium hidden"></p>
+        <button id="next-btn" onclick="nextQuestion()" class="hidden ml-auto px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg shadow transition duration-200 flex items-center gap-2 cursor-pointer">
+          Lanjut <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Screen 3: Result Screen -->
+    <div id="result-screen" class="p-6 sm:p-8 hidden">
+      <div class="text-center mb-6">
+        <div id="result-icon" class="w-20 h-20 bg-amber-100 text-amber-500 rounded-full flex items-center justify-center mx-auto mb-3 text-4xl shadow-inner">
+          <i class="fa-solid fa-trophy"></i>
+        </div>
+        <h2 id="result-title" class="text-2xl font-bold text-slate-800">Kuis Selesai!</h2>
+        <p id="result-subtitle" class="text-slate-600 text-sm mt-1">Berikut adalah hasil pencapaian Anda:</p>
+      </div>
+
+      <!-- Score Card -->
+      <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 sm:p-6 mb-6 text-center">
+        <div class="text-xs text-emerald-800 uppercase font-semibold tracking-wider">Skor Akhir</div>
+        <div class="text-4xl sm:text-5xl font-extrabold text-emerald-700 my-2" id="final-score">0</div>
+        <div class="text-xs sm:text-sm text-slate-600" id="score-summary">
+          Anda menjawab benar <span id="correct-count" class="font-bold text-emerald-600">0</span> dari <span id="total-count">15</span> soal.
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex flex-col sm:flex-row gap-3 mb-8">
+        <button onclick="restartQuiz()" class="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow transition duration-200 flex items-center justify-center gap-2 cursor-pointer">
+          <i class="fa-solid fa-rotate-right"></i> Coba Lagi
+        </button>
+        <button onclick="toggleReview()" class="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl border border-slate-300 transition duration-200 flex items-center justify-center gap-2 cursor-pointer">
+          <i class="fa-solid fa-list-check"></i> <span id="review-btn-text">Lihat Pembahasan</span>
+        </button>
+      </div>
+
+      <!-- Answer Review Section -->
+      <div id="review-section" class="hidden space-y-4 border-t border-slate-200 pt-6">
+        <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+          <i class="fa-solid fa-file-lines text-emerald-600"></i> Pembahasan Jawaban
+        </h3>
+        <div id="review-list" class="space-y-4 max-h-96 overflow-y-auto pr-2">
+          <!-- Review cards generated dynamically -->
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Data Soal Kuis
+    const quizData = [
+      {
+        question: "1. Kitab suci Al-Qur'an diturunkan kepada Nabi Muhammad SAW melalui perantara malaikat...",
+        options: ["Malaikat Jibril", "Malaikat Mikail", "Malaikat Izrail", "Malaikat Israfil"],
+        correct: 0,
+        explanation: "Malaikat Jibril bertugas menyampaikan wahyu dari Allah SWT kepada para nabi dan rasul."
+      },
+      {
+        question: "2. Surah pertama yang diturunkan kepada Nabi Muhammad SAW di Gua Hira adalah...",
+        options: ["Surah Al-Baqarah ayat 1-5", "Surah Al-Fatihah ayat 1-7", "Surah Al-'Alaq ayat 1-5", "Surah Al-Ikhlas ayat 1-4"],
+        correct: 2,
+        explanation: "Surah Al-'Alaq ayat 1-5 ('Iqra') adalah wahyu pertama yang diterima Rasulullah SAW di Gua Hira."
+      },
+      {
+        question: "3. Urutan Rukun Islam yang ketiga adalah...",
+        options: ["Menunaikan Zakat", "Mendirikan Shalat", "Berpuasa di bulan Ramadhan", "Menunaikan Haji bagi yang mampu"],
+        correct: 0,
+        explanation: "Urutan Rukun Islam: 1) Syahadat, 2) Shalat, 3) Zakat, 4) Puasa Ramadhan, 5) Naik Haji."
+      },
+      {
+        question: "4. Nabi yang mendapat julukan Khatamul Anbiya (Penutup para Nabi) adalah...",
+        options: ["Nabi Ibrahim AS", "Nabi Muhammad SAW", "Nabi Isa AS", "Nabi Musa AS"],
+        correct: 1,
+        explanation: "Nabi Muhammad SAW adalah penutup para nabi dan rasul (Khatamul Anbiya wal Mursalin)."
+      },
+      {
+        question: "5. Shalat wajib lima waktu yang memiliki jumlah rakaat paling sedikit adalah...",
+        options: ["Shalat Dzuhur", "Shalat 'Isya", "Shalat Subuh", "Shalat Maghrib"],
+        correct: 2,
+        explanation: "Shalat Subuh hanya berjumlah 2 rakaat, paling sedikit di antara shalat fardhu lima waktu."
+      },
+      {
+        question: "6. Peristiwa perjalanan malam hari Nabi Muhammad SAW dari Masjidil Haram ke Masjidil Aqsha lalu naik ke Sidratul Muntaha disebut...",
+        options: ["Isra Mi'raj", "Fathu Makkah", "Perjanjian Hudaibiyah", "Peristiwa Hijrah"],
+        correct: 0,
+        explanation: "Isra Mi'raj adalah mukjizat perjalanan malam Rasulullah SAW sekaligus peristiwa diperintahkannya shalat 5 waktu."
+      },
+      {
+        question: "7. Malaikat yang bertugas mencatat amal buruk manusia adalah...",
+        options: ["Malaikat Munkar", "Malaikat Nakir", "Malaikat 'Atid", "Malaikat Raqib"],
+        correct: 2,
+        explanation: "Malaikat Raqib mencatat amal baik, sedangkan Malaikat 'Atid mencatat amal buruk."
+      },
+      {
+        question: "8. Jumlah juz yang terdapat di dalam Al-Qur'an secara keseluruhan adalah...",
+        options: ["20 Juz", "30 Juz", "25 Juz", "40 Juz"],
+        correct: 1,
+        explanation: "Al-Qur'an terdiri dari 30 Juz, 114 Surah, dan 6.236 Ayat."
+      },
+      {
+        question: "9. Khalifah pertama dari Khulafaur Rasyidin yang menggantikan kepemimpinan setelah Nabi Muhammad SAW wafat adalah...",
+        options: ["Ali bin Abi Thalib", "Abu Bakar Ash-Shiddiq", "Umar bin Khattab", "Utsman bin Affan"],
+        correct: 1,
+        explanation: "Abu Bakar Ash-Shiddiq RA adalah khalifah pertama memimpin umat Islam setelah wafatnya Rasulullah SAW."
+      },
+      {
+        question: "10. Bersuci menggunakan debu atau tanah yang bersih sebagai pengganti wudhu dinamakan...",
+        options: ["Mandi Wajib", "Istinja", "Tayamum", "Tazkiyah"],
+        correct: 2,
+        explanation: "Tayamum adalah bersuci menggunakan debu/tanah suci apabila tidak ada air atau dalam kondisi darurat medis."
+      },
+      {
+        question: "11. Puasa yang hukumnya wajib dilakukan oleh setiap umat Islam yang memenuhi syarat selama satu bulan penuh adalah...",
+        options: ["Puasa Syawal", "Puasa Arafah", "Puasa Ramadhan", "Puasa Senin-Kamis"],
+        correct: 2,
+        explanation: "Puasa Ramadhan hukumnya Fardhu 'Ain (wajib) dilakukan sebulan penuh setiap tahun."
+      },
+      {
+        question: "12. Rukun Iman yang kelima menurut ajaran Islam adalah percaya kepada...",
+        options: ["Malaikat-malaikat Allah", "Hari Kiamat", "Kitab-kitab Allah", "Qada dan Qadar"],
+        correct: 1,
+        explanation: "Urutan Rukun Iman: 1) Allah, 2) Malaikat, 3) Kitab-kitab, 4) Rasul-rasul, 5) Hari Kiamat, 6) Qada & Qadar."
+      },
+      {
+        question: "13. Kitab suci Injil diturunkan oleh Allah SWT kepada nabi...",
+        options: ["Nabi Daud AS", "Nabi Ibrahim AS", "Nabi Isa AS", "Nabi Musa AS"],
+        correct: 2,
+        explanation: "Kitab Taurat -> Nabi Musa AS, Zabur -> Nabi Daud AS, Injil -> Nabi Isa AS, Al-Qur'an -> Nabi Muhammad SAW."
+      },
+      {
+        question: "14. Gelar Al-Amin yang diberikan masyarakat Makkah kepada Nabi Muhammad SAW berarti...",
+        options: ["Orang yang penyabar", "Orang yang cerdas", "Orang yang pemurah", "Orang yang dapat dipercaya"],
+        correct: 3,
+        explanation: "Al-Amin berarti 'Orang yang Terpercaya' karena sifat kejujuran Rasulullah SAW sejak usia muda."
+      },
+      {
+        question: "15. Rukun Iman ada...",
+        options: ["Lima", "Enam", "Tiga", "Dua"],
+        correct: 1,
+        explanation: "Rukun Iman berjumlah 6 perkara, sedangkan Rukun Islam berjumlah 5 perkara."
+      }
+    ];
+
+    // State Variables
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let timer = 20;
+    let timerInterval = null;
+    let userAnswers = [];
+    let isAnswered = false;
+
+    // Web Audio Synthesizer sound effects
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    function playSound(type) {
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      if (type === 'correct') {
+        osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+        osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); // E5
+        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.3);
+      } else if (type === 'wrong') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(220, audioCtx.currentTime); // A3
+        osc.frequency.setValueAtTime(164.81, audioCtx.currentTime + 0.15); // E3
+        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.35);
+      }
+    }
+
+    // Initialize High Score
+    document.addEventListener("DOMContentLoaded", () => {
+      const savedHighScore = localStorage.getItem("quiz_high_score") || 0;
+      document.getElementById("high-score-val").textContent = savedHighScore;
+    });
+
+    // Start Quiz
+    function startQuiz() {
+      currentQuestionIndex = 0;
+      score = 0;
+      userAnswers = [];
+      document.getElementById("start-screen").classList.add("hidden");
+      document.getElementById("result-screen").classList.add("hidden");
+      document.getElementById("quiz-screen").classList.remove("hidden");
+      loadQuestion();
+    }
+
+    // Load Single Question
+    function loadQuestion() {
+      isAnswered = false;
+      clearInterval(timerInterval);
+      timer = 20;
+      document.getElementById("timer").textContent = timer;
+      document.getElementById("live-score").textContent = score;
+
+      const q = quizData[currentQuestionIndex];
+      document.getElementById("current-question-num").textContent = currentQuestionIndex + 1;
+      document.getElementById("question-text").textContent = q.question;
+      
+      // Progress Bar
+      const progressPercent = ((currentQuestionIndex) / quizData.length) * 100;
+      document.getElementById("progress-bar").style.width = `${progressPercent}%`;
+
+      // Hide Next Button & Feedback
+      document.getElementById("next-btn").classList.add("hidden");
+      const feedback = document.getElementById("feedback-msg");
+      feedback.classList.add("hidden");
+      feedback.className = "text-xs sm:text-sm font-medium hidden";
+
+      // Options
+      const optionsContainer = document.getElementById("options-container");
+      optionsContainer.innerHTML = "";
+
+      const optionLabels = ["A", "B", "C", "D"];
+
+      q.options.forEach((opt, idx) => {
+        const btn = document.createElement("button");
+        btn.className = "w-full text-left p-3.5 sm:p-4 rounded-xl border-2 border-slate-200 hover:border-emerald-500 hover:bg-emerald-50/50 transition duration-150 flex items-center gap-3 font-medium text-slate-700 cursor-pointer text-sm sm:text-base";
+        btn.onclick = () => selectOption(idx);
+        
+        btn.innerHTML = `
+          <span class="w-7 h-7 rounded-lg bg-slate-100 border border-slate-300 flex items-center justify-center font-bold text-xs text-slate-600 shrink-0">
+            ${optionLabels[idx]}
+          </span>
+          <span class="flex-grow">${opt}</span>
+          <i class="fa-regular fa-circle text-slate-300 text-lg status-icon"></i>
+        `;
+        optionsContainer.appendChild(btn);
+      });
+
+      // Start Timer
+      timerInterval = setInterval(() => {
+        timer--;
+        document.getElementById("timer").textContent = timer;
+        if (timer <= 0) {
+          clearInterval(timerInterval);
+          handleTimeout();
+        }
+      }, 1000);
+    }
+
+    // Option Selected
+    function selectOption(selectedIndex) {
+      if (isAnswered) return;
+      isAnswered = true;
+      clearInterval(timerInterval);
+
+      const q = quizData[currentQuestionIndex];
+      const isCorrect = selectedIndex === q.correct;
+      
+      userAnswers.push({
+        question: q.question,
+        userSelected: selectedIndex,
+        correctIndex: q.correct,
+        isCorrect: isCorrect,
+        explanation: q.explanation,
+        options: q.options
+      });
+
+      const optionsContainer = document.getElementById("options-container");
+      const buttons = optionsContainer.children;
+
+      if (isCorrect) {
+        score += 10;
+        playSound('correct');
+        buttons[selectedIndex].className = "w-full text-left p-3.5 sm:p-4 rounded-xl border-2 border-emerald-500 bg-emerald-100/70 text-emerald-900 font-semibold flex items-center gap-3 text-sm sm:text-base";
+        buttons[selectedIndex].querySelector(".status-icon").className = "fa-solid fa-circle-check text-emerald-600 text-lg";
+        showFeedback("Jawaban Anda Benar! +10 Poin", "text-emerald-600");
+      } else {
+        playSound('wrong');
+        buttons[selectedIndex].className = "w-full text-left p-3.5 sm:p-4 rounded-xl border-2 border-rose-500 bg-rose-100/70 text-rose-900 font-semibold flex items-center gap-3 text-sm sm:text-base";
+        buttons[selectedIndex].querySelector(".status-icon").className = "fa-solid fa-circle-xmark text-rose-600 text-lg";
+        
+        // Highlight correct option
+        buttons[q.correct].className = "w-full text-left p-3.5 sm:p-4 rounded-xl border-2 border-emerald-500 bg-emerald-50 text-emerald-800 flex items-center gap-3 text-sm sm:text-base";
+        buttons[q.correct].querySelector(".status-icon").className = "fa-solid fa-circle-check text-emerald-600 text-lg";
+        
+        showFeedback("Jawaban Kurang Tepat", "text-rose-600");
+      }
+
+      // Disable all option buttons
+      Array.from(buttons).forEach(btn => btn.style.pointerEvents = "none");
+
+      document.getElementById("live-score").textContent = score;
+      document.getElementById("next-btn").classList.remove("hidden");
+    }
+
+    // Handle Timeout
+    function handleTimeout() {
+      if (isAnswered) return;
+      isAnswered = true;
+
+      const q = quizData[currentQuestionIndex];
+      userAnswers.push({
+        question: q.question,
+        userSelected: -1, // -1 means timeout
+        correctIndex: q.correct,
+        isCorrect: false,
+        explanation: q.explanation,
+        options: q.options
+      });
+
+      playSound('wrong');
+
+      const optionsCon
